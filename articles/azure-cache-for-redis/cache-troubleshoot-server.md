@@ -20,12 +20,15 @@ This section discusses troubleshooting issues that occur because of a condition 
 > Several of the troubleshooting steps in this guide include instructions to run Redis commands and monitor various performance metrics. For more information and instructions, see the articles in the [Additional information](#additional-information) section.
 >
 
-## Memory pressure on Redis server
+## Memory pressure on Redis server, and OOM errors
 
 Memory pressure on the server side leads to all kinds of performance problems that can delay processing of requests. When memory pressure hits, the system may page data to disk. This _page faulting_ causes the system to slow down significantly. There are several possible causes of this memory pressure:
 
 - The cache is filled with data near its maximum capacity.
 - Redis is seeing high memory fragmentation. This fragmentation is most often caused by storing large objects since Redis is optimized for small objects.
+- Large amounts of memory could be used for client TCP response buffers, or replication buffers, when a client or replica is being too slow to receive a large amount of response data from redis, causing similarly large spikes in redis memory usage.
+
+Any time the redis server is too low on in-RAM memory or reaches the configured maxmemory limit redis may also return OOM or out-of-memory errors. OOM errors may continue indefinitely when there is no evictable data, or they may only be temporary and then stop of their own accored when redis expiry or eviction restore availability of memory, or when memory demands are otherwise reduced.
 
 Redis exposes two stats through the [INFO](https://redis.io/commands/info) command that can help you identify this issue: "used_memory" and "used_memory_rss". You can [view these metrics](cache-how-to-monitor.md#view-metrics-with-azure-monitor-metrics-explorer) using the portal.
 
@@ -33,7 +36,7 @@ There are several possible changes you can make to help keep memory usage health
 
 - [Configure a memory policy](cache-configure.md#maxmemory-policy-and-maxmemory-reserved) and set expiration times on your keys. This policy may not be sufficient if you have fragmentation.
 - [Configure a maxmemory-reserved value](cache-configure.md#maxmemory-policy-and-maxmemory-reserved) that is large enough to compensate for memory fragmentation.
-- Break up your large cached objects into smaller related objects.
+- Break up your large cached objects into smaller related objects, to limit large request/response sizes.
 - [Create alerts](cache-how-to-monitor.md#alerts) on metrics like used memory to be notified early about potential impacts.
 - [Scale](cache-how-to-scale.md) to a larger cache size with more memory capacity.
 
