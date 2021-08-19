@@ -49,7 +49,12 @@ sections:
           | P5 | 120 GB | 20 | 6,000 / 750   | 400,000 | 373,000 |
           
           For instructions on setting up stunnel or downloading the Redis tools such as `redis-benchmark.exe`, see [How can I run Redis commands?](cache-development-faq.yml#how-can-i-run-redis-commands-).
-          
+
+      - question: |
+          Does C4 size really have less CPU cores than C3 size?
+        answer: |
+          Yes. If you want to scale up from C3 and keep the same number of CPU cores, and same ops/sec throughput, you should scale up to C5 and not C4. (This is also related to why C3 and C4 are similar in price.)
+
       - question: |
           In what region should I locate my cache?
         answer: |
