@@ -67,6 +67,16 @@ Redis supports the following useful command categories. For more information and
 
 *Keys* allow you to control access to specific keys or groups of keys stored in the cache. Use `~<pattern>` in a permission string to provide a pattern for keys. Use either `~*` or `allkeys` to indicate that the permissions apply to all keys in the cache.
 
+## Use a built-in access policy for your application
+
+As well as authoring your own access policy Azure Cache for Redis supplies three built-in policies that you can assign:
+
+|Name|Permissions string|Description|
+|------------------|-----------|
+|Data Owner|`+@all allkeys`|Allow application to execute all commands, on all keys.|
+|Data Contributor|`+@all -@dangerous +cluster|info +cluster|nodes +cluster|slots allkeys`|Allow application to execute most commands except  dangerous commands, on all keys.|
+|Data Reader|`+@read +@connection -client +client|caching +client|getname +client|getredir +client|id +client|info +client|list +client|reply +client|setinfo +client|setname +client|tracking +client|trackinginfo +cluster|info +cluster|nodes +cluster|slots allkeys`|Allow application to execute `read` commands including various commands that don't modify any keys, on all keys.|
+
 ## Configure a custom data access policy for your application
 
 To configure a custom data access policy, you create a permissions string to use as your custom access policy, and enable Microsoft Entra authentication for your cache.
@@ -78,8 +88,9 @@ Configure permission strings according to your requirements. The following examp
 |Permissions string|Description|
 |------------------|-----------|
 |`+@all allkeys`|Allow application to execute all commands on all keys.|
-|`+@read ~*`|Allow application to execute only `read` command category.|
-|`+@read +set ~Az*`|Allow application to execute `read` command category and set command on keys with prefix `Az`.|
+|`+@read +cluster|info +cluster|nodes +cluster|slots allkeys ~*`|Allow application to execute `read` command category on keys with any prefix, and to fetch the cluster topology (important when enabling clustering).|
+|`+@read +@connection +cluster|info +cluster|nodes +cluster|slots allkeys`|Allow application to execute `read` commands on all keys, and execute connection management commands like `CLIENT KILL` or `CLIENT PAUSE`, and to fetch the cluster topology.| 
+|`+@read +set ~Az*`|Allow application to execute `read` command category and `SET` command on keys with prefix `Az`.|
 
 ### Create the custom data access policy
 
